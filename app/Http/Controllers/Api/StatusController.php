@@ -6,6 +6,7 @@ use App\Constants\QueueConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Tracking;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -32,7 +33,7 @@ class StatusController extends Controller
             $decodedItems = array_filter($decodedItems);
 
             return response()->json([
-                'status' => 'success',
+                'status' => 'online',
                 'data' => $decodedItems,
                 'count' => count($decodedItems)
             ]);
@@ -44,16 +45,18 @@ class StatusController extends Controller
             ]);
 
             return response()->json([
-                'status' => 'error',
+                'status' => 'offline',
                 'data' => [],
                 'count' => 0
-            ], 500);
+            ]);
         }
     }
 
     public function database()
     {
         try {
+            DB::connection()->getPdo();
+
             $trackingCount = Tracking::count();
 
             return response()->json([
@@ -61,6 +64,11 @@ class StatusController extends Controller
                 'count' => $trackingCount
             ]);
         } catch (\Exception $e) {
+            Log::error('Database connection failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'status' => 'offline',
                 'count' => 0
