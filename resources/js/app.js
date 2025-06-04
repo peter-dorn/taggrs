@@ -64,7 +64,7 @@ const loadRedisStatus = async () => {
         const response = await axios.get('/api/status/redis');
         redisStatus.innerHTML = `
                 <div class="text-green-600">
-                    Connected (${response.data.count} keys)
+                    Online (${response.data.count} keys)
                 </div>
             `;
     } catch (error) {
